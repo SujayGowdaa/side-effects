@@ -1,27 +1,34 @@
 import Container from './UI/Container.tsx';
-import { type Timer as TimerProps } from '../store/timers-context.tsx';
+import {
+  useTimersContext,
+  type Timer as TimerProps,
+} from '../store/timers-context.tsx';
 import { useEffect, useState } from 'react';
 
 export default function Timer({ name, duration }: TimerProps) {
   const [remainingTime, setRemainingTime] = useState(duration * 1000);
+  const { isRunning } = useTimersContext();
 
   useEffect(() => {
     const intervalValue = 100;
+    let intervalId: number;
 
-    const intervalId = setInterval(() => {
-      setRemainingTime((prev) => {
-        if (prev <= 0) {
-          clearInterval(intervalId); // ⛔ stop the interval once we hit 0
-          return 0;
-        }
-        return prev - intervalValue;
-      });
-    }, intervalValue);
+    if (isRunning) {
+      intervalId = setInterval(() => {
+        setRemainingTime((prev) => {
+          if (prev <= 0) {
+            clearInterval(intervalId); // ⛔ stop the interval once we hit 0
+            return 0;
+          }
+          return prev - intervalValue;
+        });
+      }, intervalValue);
+    }
 
     return () => {
       clearInterval(intervalId);
     };
-  }, []);
+  }, [isRunning]);
 
   return (
     <Container as='article'>
@@ -33,7 +40,6 @@ export default function Timer({ name, duration }: TimerProps) {
     </Container>
   );
 }
-
 // export default function Timer({ name, duration }: TimerProps) {
 //   const [remainingTime, setRemainingTime] = useState(duration * 1000);
 //   const interval = useRef<null | number>(null);
